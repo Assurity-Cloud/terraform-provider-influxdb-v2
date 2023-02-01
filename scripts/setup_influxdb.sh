@@ -1,4 +1,4 @@
-#!/usr/bin/.env bash
+#!/bin/bash
 
 echo "1) launching influx"
 docker run -d --name tf_acc_tests_influxdb -p 8086:8086 influxdb:2.0.7

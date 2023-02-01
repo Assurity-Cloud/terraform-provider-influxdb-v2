@@ -125,8 +125,8 @@ func testAccCheckUpdate(n string) resource.TestCheckFunc {
 func testAccCreateBucket() string {
 	return `
 resource "influxdb-v2_bucket" "acctest" {
-    description = "Acceptance test bucket" 
-    name = "acctest" 
+    description = "Acceptance test bucket"
+    name = "acctest"
     org_id = "` + os.Getenv("INFLUXDB_V2_ORG_ID") + `"
     retention_rules {
         every_seconds = "3640"
