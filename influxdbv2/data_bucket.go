@@ -11,62 +11,61 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func DataSourceOrganization() *schema.Resource {
+func DataSourceBucket() *schema.Resource {
 	return &schema.Resource{
-		Description: "Lookup an Organization in InfluxDB2.",
-		ReadContext: DataSourceOrganizationRead,
+		Description: "Lookup a Bucket in InfluxDB2.",
+		ReadContext: DataSourceBucketRead,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    false,
-				Description: "Name of the Organization.",
-			},
-			"id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "ID of the Organization.",
+				Description: "Name of the Bucket.",
 			},
 			// Computed outputs
 			"description": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The description of the Organization.",
+				Description: "The description of the Bucket.",
+			},
+			"id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "ID of the Bucket.",
 			},
 		},
 	}
 }
 
-func DataSourceOrganizationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func DataSourceBucketRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	influx := meta.(influxdb2.Client)
-	orgAPI := influx.OrganizationsAPI()
+	bucketsAPI := influx.BucketsAPI()
 
-	// Warning or errors can be collected in a slice type
 	var (
-		diags diag.Diagnostics
-		org   *domain.Organization
-		err   error
+		diags  diag.Diagnostics
+		bucket *domain.Bucket
+		err    error
 	)
 
 	if v, ok := d.GetOk("name"); ok {
-		orgName := v.(string)
-		if org, err = orgAPI.FindOrganizationByName(ctx, orgName); err != nil {
+		bucketName := v.(string)
+		if bucket, err = bucketsAPI.FindBucketByName(ctx, bucketName); err != nil {
 			diags = append(diags, diag.FromErr(err)...)
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Error,
-				Summary:  fmt.Sprintf("Can't find Organization with name: %s", orgName),
+				Summary:  fmt.Sprintf("Can't find Bucket with name: %s", bucketName),
 			})
 			return diags
 		}
 	}
 
-	id := org.Id
+	id := bucket.Id
 	if id == nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
-			Summary:  "Organization not found",
+			Summary:  "Bucket not found",
 		})
 		return diags
 	}
@@ -76,12 +75,12 @@ func DataSourceOrganizationRead(ctx context.Context, d *schema.ResourceData, met
 	if err != nil {
 		return nil
 	}
-	err = d.Set("name", org.Name)
+	err = d.Set("name", bucket.Name)
 	if err != nil {
 		return nil
 	}
-	if org.Description != nil {
-		err := d.Set("description", *org.Description)
+	if bucket.Description != nil {
+		err := d.Set("description", *bucket.Description)
 		if err != nil {
 			return nil
 		}
